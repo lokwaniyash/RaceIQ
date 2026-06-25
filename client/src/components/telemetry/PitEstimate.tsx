@@ -1,4 +1,5 @@
 import type { TelemetryPacket, LivePitData, GameId } from "@shared/types";
+import { tireHealthTextClass, tireHealthBgClass } from "@/lib/vehicle-dynamics";
 import { PitWindow } from "./PitWindow";
 
 interface PitEstimateProps {
@@ -30,6 +31,23 @@ export function PitEstimate({ packet, pit, gameId }: PitEstimateProps) {
 
   const fuelLaps = pit?.fuelLapsRemaining ?? null;
 
+  // Per-tire display
+  const tireLabels = ["FL", "FR", "RL", "RR"] as const;
+  const wears = [packet.TireWearFL, packet.TireWearFR, packet.TireWearRL, packet.TireWearRR];
+  const tireData = tireLabels.map((label, i) => {
+    const health = (1 - wears[i]) * 100;
+    const wpl = pit?.tireEstimates?.wearPerLap[i] ?? 0;
+    return {
+      label,
+      health,
+      healthClr: tireHealthTextClass(health),
+      healthBg: tireHealthBgClass(health),
+      toCliff: pit?.tireEstimates?.toCliff[i] ?? null,
+      toDead: pit?.tireEstimates?.toDead[i] ?? null,
+      wearPerLap: wpl > 0 ? (wpl * 100).toFixed(1) : null,
+    };
+  });
+
   const pitStatus = packet.acc?.pitStatus;
   const pitBadge =
     pitStatus === "in_pit"
@@ -57,6 +75,40 @@ export function PitEstimate({ packet, pit, gameId }: PitEstimateProps) {
             </div>
             <div className={`text-2xl font-mono font-black tabular-nums leading-none ${fuelIsLitres ? "w-20" : "w-14"} text-right ${fuelColor}`}>{fuelDisplay}</div>
           </div>
+        </div>
+        
+        {/* Tire section */}
+        <div className="py-1">
+          <div className="text-xs text-app-text-muted uppercase tracking-wider font-semibold mb-2">Tires</div>
+
+          {/* Column headers */}
+          <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-x-2 items-center mb-1 px-0.5">
+            <div className="w-6" />
+            <div />
+            <div className="text-[10px] text-app-text-dim uppercase tracking-wider text-right w-12">Health</div>
+            <div className="text-[10px] text-app-text-dim uppercase tracking-wider text-right w-14">Wear/lap</div>
+            <div className="text-[10px] text-amber-400/70 uppercase tracking-wider text-right w-12">Cliff{pit?.cliffPct ? ` ${pit.cliffPct}%` : ""}</div>
+            <div className="text-[10px] text-red-400/70 uppercase tracking-wider text-right w-12">Dead{pit?.deadPct ? ` ${pit.deadPct}%` : ""}</div>
+          </div>
+
+          {tireData.map((t) => (
+            <div key={t.label} className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-x-2 items-center py-1.5 px-0.5">
+              <div className="text-sm font-bold text-app-text-muted w-6">{t.label}</div>
+              <div className="h-3 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full ${t.healthBg}`} style={{ width: `${t.health}%` }} />
+              </div>
+              <div className={`text-lg font-mono font-black tabular-nums leading-none text-right w-12 ${t.healthClr}`}>{t.health.toFixed(0)}%</div>
+              <div className={`text-sm font-mono font-bold tabular-nums leading-none text-right w-14 ${t.wearPerLap ? "text-app-text-secondary" : "text-app-text-dim"}`}>
+                {t.wearPerLap ? `${t.wearPerLap}%` : "—"}
+              </div>
+              <div className={`text-lg font-mono font-bold tabular-nums leading-none text-right w-12 ${t.toCliff != null ? "text-amber-400" : "text-app-text-dim"}`}>
+                {t.toCliff != null ? t.toCliff.toFixed(1) : "—"}
+              </div>
+              <div className={`text-lg font-mono font-bold tabular-nums leading-none text-right w-12 ${t.toDead != null ? "text-red-400" : "text-app-text-dim"}`}>
+                {t.toDead != null ? t.toDead.toFixed(1) : "—"}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
