@@ -6,6 +6,7 @@ import { TireGrid } from "../telemetry/TireGrid";
 import { LapTimeChart } from "../LapTimeChart";
 import { PitEstimate } from "../telemetry/PitEstimate";
 import { RecordedLaps } from "../RecordedLaps";
+import { LiveTrackMap } from "../LiveTrackMap";
 import { NoDataView } from "../NoDataView";
 import { RaceInfo } from "../RaceInfo";
 import { useTrackName, useCarName } from "../../hooks/queries";
@@ -82,13 +83,13 @@ export function F1LiveDashboard() {
     <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-0 h-full">
       {/* Left column: Core telemetry + pit info */}
       <div className="border-r border-app-border overflow-auto">
-        {/* Weather | Electronics side-by-side */}
+        {/* Live Map | Electronics side-by-side */}
         <div className="border-b border-app-border grid grid-cols-2">
           <div className="border-r border-app-border">
             <div className="h-8 px-2 border-b border-app-border flex items-center">
-              <h2 className="text-xs font-semibold text-app-text-muted uppercase tracking-wider">Weather</h2>
+              <h2 className="text-xs font-semibold text-app-text-muted uppercase tracking-wider">Live Map</h2>
             </div>
-            <WeatherWidget f1={f1} />
+            <LiveTrackMap packet={packet} />
           </div>
           <div>
             <ErsSection f1={f1} />
@@ -156,7 +157,8 @@ function DrsIndicator({ f1 }: { f1: F1ExtendedData }) {
   }
 
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center items-center">
+      <WeatherWidget f1={f1} />
       <span className={`text-sm font-bold px-3 py-1 rounded ${bg} ${text}`}>{label}</span>
     </div>
   );
@@ -295,7 +297,7 @@ function WeatherWidget({ f1 }: { f1: F1ExtendedData }) {
   const hasRain = f1.rainPercentage > 0;
 
   return (
-    <div className="h-full flex flex-col justify-center gap-2 px-3 py-2">
+    <div className="h-full flex flex-col justify-center gap-2 px-10 py-5">
       <div className="flex items-center gap-2">
         <div className="text-3xl leading-none">{icon}</div>
         <div className="text-sm font-bold text-app-text">{label}</div>
