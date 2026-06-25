@@ -76,7 +76,7 @@ export function PitEstimate({ packet, pit, gameId }: PitEstimateProps) {
             <div className={`text-2xl font-mono font-black tabular-nums leading-none ${fuelIsLitres ? "w-20" : "w-14"} text-right ${fuelColor}`}>{fuelDisplay}</div>
           </div>
         </div>
-        
+
         {/* Tire section */}
         <div className="py-1">
           <div className="text-xs text-app-text-muted uppercase tracking-wider font-semibold mb-2">Tires</div>
